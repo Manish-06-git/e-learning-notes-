@@ -1,3 +1,4 @@
+console.log("🔥🔥 THIS IS THE CORRECT BACKEND FILE RUNNING 🔥🔥");
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
@@ -55,7 +56,9 @@ function auth(req, res, next) {
   }
 }
 
-/* NOTES */
+/* ================= NOTES ================= */
+
+/* GET NOTES */
 app.get("/notes", auth, async (req, res) => {
   const [rows] = await db.query(
     "SELECT * FROM notes WHERE user_id=?",
@@ -64,28 +67,100 @@ app.get("/notes", auth, async (req, res) => {
   res.json(rows);
 });
 
+/* CREATE NOTE (with status) */
 app.post("/notes", auth, async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, status } = req.body;
   await db.query(
-    "INSERT INTO notes (user_id, title, content) VALUES (?,?,?)",
-    [req.user.id, title, content]
+    "INSERT INTO notes (user_id, title, content, status) VALUES (?,?,?,?)",
+    [req.user.id, title, content, status || "Pending"]
   );
   res.json({ success: true });
 });
 
+/* UPDATE NOTE + SAVE VERSION */
 app.put("/notes/:id", auth, async (req, res) => {
-  const { title, content } = req.body;
-  await db.query(
-    "UPDATE notes SET title=?, content=? WHERE id=?",
-    [title, content, req.params.id]
+  const { title, content, status } = req.body;
+
+  // Save old version before updating
+  const [old] = await db.query(
+    "SELECT content FROM notes WHERE id=? AND user_id=?",
+    [req.params.id, req.user.id]
   );
+
+  if (old.length > 0) {
+    await db.query(
+      "INSERT INTO note_versions (note_id, content) VALUES (?, ?)",
+      [req.params.id, old[0].content]
+    );
+  }
+
+  // Update note
+  await db.query(
+    "UPDATE notes SET title=?, content=?, status=? WHERE id=? AND user_id=?",
+    [title, content, status, req.params.id, req.user.id]
+  );
+
   res.json({ success: true });
 });
 
-app.delete("/notes/:id", auth, async (req, res) => {
-  await db.query("DELETE FROM notes WHERE id=?", [req.params.id]);
+/* DELETE NOTE */
+app.delete("/notes/:id/versions", auth, async (req, res) => {
+  console.log("🔥 DELETE HISTORY API HIT FOR NOTE:", req.params.id);
+
+  await db.query(
+    "DELETE FROM note_versions WHERE note_id=?",
+    [req.params.id]
+  );
+
   res.json({ success: true });
 });
+
+
+/* ================= VERSION HISTORY ================= */
+
+/* GET ALL VERSIONS OF A NOTE */
+app.get("/notes/:id/versions", auth, async (req, res) => {
+  const [rows] = await db.query(
+    "SELECT * FROM note_versions WHERE note_id=? ORDER BY saved_at DESC",
+    [req.params.id]
+  );
+  res.json(rows);
+});
+app.delete("/notes/:id/versions", auth, async (req, res) => {
+  await db.query(
+    "DELETE nv FROM note_versions nv JOIN notes n ON nv.note_id = n.id WHERE nv.note_id=? AND n.user_id=?",
+    [req.params.id, req.user.id]
+  );
+
+  res.json({ success: true });
+});
+
+
+/* RESTORE A VERSION */
+app.post("/notes/:id/restore", auth, async (req, res) => {
+  const { content } = req.body;
+
+  await db.query(
+    "UPDATE notes SET content=? WHERE id=? AND user_id=?",
+    [content, req.params.id, req.user.id]
+  );
+
+  res.json({ success: true });
+});
+
+/* ================= SEARCH ================= */
+
+/* SEARCH NOTES */
+app.get("/search", auth, async (req, res) => {
+  const q = `%${req.query.q}%`;
+  const [rows] = await db.query(
+    "SELECT * FROM notes WHERE user_id=? AND (title LIKE ? OR content LIKE ?)",
+    [req.user.id, q, q]
+  );
+  res.json(rows);
+});
+
+/* ================= START SERVER ================= */
 
 app.listen(5000, () =>
   console.log("✅ Backend running on http://localhost:5000")

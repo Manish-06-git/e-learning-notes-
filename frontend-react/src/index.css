@@ -114,3 +114,104 @@ button {
 .actions {
   margin-top: 15px;
 }
+/* ===== SEARCH BAR UI ===== */
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  padding: 6px 12px;
+  border-radius: 25px;
+  width: 300px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  margin-right: 15px;
+}
+
+.search-icon {
+  font-size: 18px;
+  margin-right: 8px;
+  color: #666;
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+  background: transparent;
+}
+/* ===== CLEAR SEARCH BUTTON ===== */
+
+.clear-btn {
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 8px;
+  color: #999;
+  transition: color 0.2s ease;
+}
+
+.clear-btn:hover {
+  color: #e74c3c;
+}
+/* ===== VERSION HISTORY MODERN UI ===== */
+
+.history-panel {
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 15px;
+  border-radius: 12px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.delete-history {
+  background: #e74c3c;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.delete-history:hover {
+  background: #c0392b;
+}
+
+.history-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  color: #eee;
+}
+
+.history-time {
+  font-size: 13px;
+  color: #ccc;
+}
+
+.restore-btn {
+  background: #3498db;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.restore-btn:hover {
+  background: #2980b9;
+}
